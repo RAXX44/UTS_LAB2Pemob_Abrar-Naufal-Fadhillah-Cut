@@ -6,72 +6,61 @@ import '../widgets/primary_button.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/';
+  const HomeScreen({super.key});
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _controller = TextEditingController();
+  final _ctrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final qp = Provider.of<QuizProvider>(context, listen: false);
-    _controller.text = qp.userName;
+    _ctrl.text = qp.userName;
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProv = Provider.of<ThemeProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
     final mq = MediaQuery.of(context);
+    final isWide = mq.size.width > 800;
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Center(
           child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 24, horizontal: 18),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/header_bg.png'),
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
-              ),
-            ),
+            constraints: const BoxConstraints(maxWidth: 900),
+            padding: const EdgeInsets.all(18),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: Icon(themeProv.isDark ? Icons.dark_mode : Icons.light_mode),
-                      onPressed: () => themeProv.toggleTheme(),
-                    ),
-                    Image.asset('assets/images/logo.png', width: mq.size.width * 0.2),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Text('Selamat datang di Kuis Pilihan Ganda', style: TextStyle(fontSize: 20, fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
-                SizedBox(height: 16),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  IconButton(
+                    onPressed: () => theme.toggle(),
+                    icon: Icon(theme.isDark ? Icons.dark_mode : Icons.light_mode),
+                    tooltip: 'Toggle theme',
+                  ),
+                  Image.asset('assets/images/logo.png', width: isWide ? 160 : 100),
+                ]),
+                const SizedBox(height: 20),
+                const Text('Selamat datang di Kuis Pilihan Ganda', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 14),
                 TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(labelText: 'Masukkan nama Anda', border: OutlineInputBorder()),
+                  controller: _ctrl,
+                  decoration: const InputDecoration(labelText: 'Masukkan nama Anda', border: OutlineInputBorder()),
                 ),
-                SizedBox(height: 16),
-                PrimaryButton(
-                  text: 'Mulai Kuis',
-                  onPressed: () {
-                    final name = _controller.text.trim();
-                    if (name.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Nama tidak boleh kosong')));
-                      return;
-                    }
-                    Provider.of<QuizProvider>(context, listen: false).setUserName(name);
-                    Navigator.pushNamed(context, '/quiz');
-                  },
-                ),
-                SizedBox(height: 20),
-                Text('Petunjuk: Jawab semua pertanyaan. Progress tersimpan saat rotasi/perpindahan halaman.', textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                PrimaryButton(label: 'Mulai Kuis', onPressed: () {
+                  final name = _ctrl.text.trim();
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nama tidak boleh kosong')));
+                    return;
+                  }
+                  Provider.of<QuizProvider>(context, listen: false).setUserName(name);
+                  Navigator.pushNamed(context, '/quiz');
+                }),
+                const SizedBox(height: 10),
+                const Text('Petunjuk: Jawab semua pertanyaan. Progress disimpan otomatis.'),
               ],
             ),
           ),

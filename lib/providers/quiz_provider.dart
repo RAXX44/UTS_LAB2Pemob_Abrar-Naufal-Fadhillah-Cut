@@ -1,25 +1,25 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/question_model.dart';
 import '../data/sample_questions.dart';
-import 'dart:convert';
 
 class QuizProvider with ChangeNotifier {
   String userName = '';
   final List<Question> questions = sampleQuestions;
-  Map<String,int> answers = {}; // questionId -> selectedIndex
+  final Map<String,int> answers = {};
 
   QuizProvider() {
-    _loadSavedProgress();
+    _load();
   }
 
-  Future<void> _loadSavedProgress() async {
+  Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName') ?? '';
-    final saved = prefs.getString('answers');
-    if (saved != null) {
-      final Map<String,dynamic> map = jsonDecode(saved);
-      answers = map.map((k,v) => MapEntry(k, v as int));
+    final s = prefs.getString('answers');
+    if (s != null) {
+      final Map<String,dynamic> m = jsonDecode(s);
+      m.forEach((k,v) => answers[k] = v as int);
     }
     notifyListeners();
   }
@@ -27,36 +27,38 @@ class QuizProvider with ChangeNotifier {
   Future<void> setUserName(String name) async {
     userName = name;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', userName);
+    await prefs.setString('userName', name);
     notifyListeners();
   }
 
-  Future<void> selectAnswer(String questionId, int index) async {
-    answers[questionId] = index;
-    await _saveAnswers();
+  Future<void> selectAnswer(String qid, int idx) async {
+    answers[qid] = idx;
+    await _save();
     notifyListeners();
   }
 
-  int? selectedAnswer(String questionId) => answers[questionId];
+  int? selected(String qid) => answers[qid];
 
-  Future<void> _saveAnswers() async {
+  Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('answers', jsonEncode(answers));
   }
 
-  int get totalCorrect {
-    int score = 0;
+  int get correctCount {
+    int c = 0;
     for (var q in questions) {
-      final selected = answers[q.id];
-      if (selected != null && selected == q.correctIndex) score++;
+      final sel = answers[q.id];
+      if (sel != null && sel == q.correctIndex) c++;
     }
-    return score;
+    return c;
   }
 
-  void resetQuiz() async {
+  void resetAll() async {
     answers.clear();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('answers');
+    await prefs.remove('userName');
+    userName = '';
     notifyListeners();
   }
 }

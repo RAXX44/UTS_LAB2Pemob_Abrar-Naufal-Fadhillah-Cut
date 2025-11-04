@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
 class PrimaryButton extends StatelessWidget {
-  final String text;
+  final String label;
   final VoidCallback onPressed;
-  const PrimaryButton({required this.text, required this.onPressed, Key? key}): super(key: key);
+  const PrimaryButton({required this.label, required this.onPressed, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
+    final w = MediaQuery.of(context).size.width;
     return SizedBox(
-      width: mq.size.width * 0.8,
+      width: w > 600 ? 420 : double.infinity,
       height: 48,
       child: ElevatedButton(
         onPressed: onPressed,
-        child: Text(text, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
-        style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        child: Text(label, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
       ),
     );
   }
